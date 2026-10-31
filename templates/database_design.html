@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+
+{% block title %}Database Design &amp; DBMS Analysis{% endblock %}
+{% block breadcrumb %}Database Design &amp; Architecture{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <!-- Header Section -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Database Design &amp; DBMS Analysis</h4>
+            <p class="text-muted small mb-0">
+                Formal relational architecture, 3NF normalization proofs, interactive ER diagram, and constraint matrices for 10 entities.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('database_health') }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                <i class="bi bi-heart-pulse text-danger me-1"></i> Live Health API
+            </a>
+            <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm" id="btnRefreshDesignData">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Metadata
+            </button>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="content-card mb-4 p-0">
+        <ul class="nav nav-tabs db-tabs border-bottom px-3 pt-2" id="dbDesignTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="er-diagram-tab" data-bs-toggle="tab" data-bs-target="#er-diagram" type="button" role="tab" aria-controls="er-diagram" aria-selected="true">
+                    <i class="bi bi-diagram-3-fill text-primary me-2"></i>Interactive ER Diagram
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="relational-schema-tab" data-bs-toggle="tab" data-bs-target="#relational-schema" type="button" role="tab" aria-controls="relational-schema" aria-selected="false">
+                    <i class="bi bi-table text-success me-2"></i>Relational Schema (Live Metadata)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="normalization-tab" data-bs-toggle="tab" data-bs-target="#normalization" type="button" role="tab" aria-controls="normalization" aria-selected="false">
+                    <i class="bi bi-check2-all text-warning me-2"></i>Normalization Analysis (1NF, 2NF, 3NF)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="constraints-tab" data-bs-toggle="tab" data-bs-target="#constraints" type="button" role="tab" aria-controls="constraints" aria-selected="false">
+                    <i class="bi bi-shield-lock-fill text-danger me-2"></i>Constraints &amp; Viva Q&amp;A
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content p-4" id="dbDesignTabContent">
+
+            <!-- ================================================================= -->
+            <!-- TAB A: INTERACTIVE ER DIAGRAM -->
+            <!-- ================================================================= -->
+            <div class="tab-pane fade show active" id="er-diagram" role="tabpanel" aria-labelledby="er-diagram-tab">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Entity-Relationship Diagram (10 Normalized Entities)</h5>
+                        <p class="text-muted small mb-0">Use mouse drag to pan and the controls toolbar to zoom or fit to screen.</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light text-dark border px-2 py-1 small">
+                            <i class="bi bi-check-circle-fill text-success me-1"></i> 10 Entities &bull; 9 Relationships
+                        </span>
+                    </div>
+                </div>
+
+                <!-- ER Canvas Container -->
+                <div class="er-canvas-wrapper" id="erCanvasWrapper">
+                    <!-- Zoom & Pan Controls Toolbar -->
+                    <div class="er-controls-toolbar">
+                        <button class="btn btn-sm btn-light border" id="btnZoomIn" title="Zoom In">
+                            <i class="bi bi-zoom-in"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light border" id="btnZoomOut" title="Zoom Out">
+                            <i class="bi bi-zoom-out"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light border" id="btnFitScreen" title="Fit to Screen">
+                            <i class="bi bi-arrows-fullscreen"></i> Fit
+                        </button>
+                        <button class="btn btn-sm btn-light border" id="btnResetZoom" title="Reset View">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <!-- Legend Overlay -->
+                    <div class="er-legend">
+                        <div class="fw-bold mb-1 text-dark" style="font-size:0.75rem;">ER Legend</div>
+                        <div class="d-flex flex-column gap-1">
+                            <div><span class="badge-key badge-key-pk me-1">PK</span> Primary Key</div>
+                            <div><span class="badge-key badge-key-fk me-1">FK</span> Foreign Key</div>
+                            <div><span class="badge-key badge-key-uk me-1">UQ</span> Unique Constraint</div>
+                            <div><span class="text-primary fw-bold">1 &bull; N</span> One-to-Many Cardinality</div>
+                            <div><span class="text-success fw-bold">1 &bull; 1</span> One-to-One Cardinality</div>
+                        </div>
+                    </div>
+
+                    <!-- SVG Viewport -->
+                    <svg id="erSvgViewport" class="er-svg-viewport" xmlns="http://www.w3.org/2000/svg">
+                        <g id="erViewportGroup">
+                            <!-- SVG contents rendered dynamically via JS -->
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- TAB B: RELATIONAL SCHEMA (LIVE METADATA) -->
+            <!-- ================================================================= -->
+            <div class="tab-pane fade" id="relational-schema" role="tabpanel" aria-labelledby="relational-schema-tab">
+                <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Live Relational Schema &amp; MySQL Information Schema</h5>
+                        <p class="text-muted small mb-0">
+                            Dynamically extracted from <code>information_schema.COLUMNS</code>, <code>KEY_COLUMN_USAGE</code>, and <code>CHECK_CONSTRAINTS</code>.
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="text" id="schemaSearchInput" class="form-control form-control-sm" placeholder="Filter tables or columns..." style="width: 240px;">
+                    </div>
+                </div>
+
+                <!-- 10 Tables Accordion Container -->
+                <div id="schemaTablesContainer" class="d-flex flex-column gap-4">
+                    <div class="text-center py-5 text-muted">
+                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                        Querying MySQL information schema metadata...
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- TAB C: NORMALIZATION ANALYSIS -->
+            <!-- ================================================================= -->
+            <div class="tab-pane fade" id="normalization" role="tabpanel" aria-labelledby="normalization-tab">
+                <div class="mb-4">
+                    <h5 class="fw-bold text-dark mb-1">Academic DBMS Normalization Analysis (1NF, 2NF, 3NF)</h5>
+                    <p class="text-muted small mb-0">
+                        Rigorous verification of First, Second, and Third Normal Forms, including Functional Dependencies and Lossless Join proofs.
+                    </p>
+                </div>
+
+                <!-- 3 Normal Forms Concept Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded border h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-primary rounded-pill px-2 py-1">1NF</span>
+                                <h6 class="fw-bold text-dark mb-0">First Normal Form</h6>
+                            </div>
+                            <p class="text-secondary small mb-2" style="font-size:0.8rem; line-height:1.45;">
+                                <strong>Rule:</strong> Each column contains atomic (indivisible) values; no repeating groups or composite lists.
+                            </p>
+                            <div class="p-2 bg-white rounded border small text-muted" style="font-size:0.75rem;">
+                                <strong class="text-dark">Project Implementation:</strong> Student phones and HR contacts were decomposed from single comma/multivalued columns into dedicated child entities <code>student_phone</code> and <code>company_contact_phone</code>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded border h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-success rounded-pill px-2 py-1">2NF</span>
+                                <h6 class="fw-bold text-dark mb-0">Second Normal Form</h6>
+                            </div>
+                            <p class="text-secondary small mb-2" style="font-size:0.8rem; line-height:1.45;">
+                                <strong>Rule:</strong> Must be in 1NF and all non-prime attributes must be <em>fully functionally dependent</em> on the whole candidate key (no partial dependencies).
+                            </p>
+                            <div class="p-2 bg-white rounded border small text-muted" style="font-size:0.75rem;">
+                                <strong class="text-dark">Project Implementation:</strong> In composite key entities <code>student_phone(student_id, phone_number)</code> and <code>company_contact_phone(contact_id, phone_number)</code>, <code>phone_type</code> depends on the combined key. In <code>interview</code>, evaluation attributes depend on <code>{application_id, round_number}</code>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded border h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-warning text-dark rounded-pill px-2 py-1">3NF</span>
+                                <h6 class="fw-bold text-dark mb-0">Third Normal Form</h6>
+                            </div>
+                            <p class="text-secondary small mb-2" style="font-size:0.8rem; line-height:1.45;">
+                                <strong>Rule:</strong> Must be in 2NF and contain <em>no transitive dependencies</em> ($X \to Y$, where $X$ is not a superkey and $Y$ is non-prime).
+                            </p>
+                            <div class="p-2 bg-white rounded border small text-muted" style="font-size:0.75rem;">
+                                <strong class="text-dark">Project Implementation:</strong> Department info is separated from Student ($student\_id \to dept\_id \to dept\_name$), Company is separated from Job ($job\_id \to comp\_id \to comp\_name$), eliminating update anomalies.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table-by-Table Functional Dependencies & Candidate Keys -->
+                <div class="content-card mb-4 p-0">
+                    <div class="content-card-header">
+                        <h6 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-key-fill text-warning me-2"></i> Functional Dependencies &amp; Candidate Keys (All 10 Entities)
+                        </h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 180px;">Entity Relation</th>
+                                    <th style="width: 220px;">Primary &amp; Candidate Keys</th>
+                                    <th>Functional Dependencies ($X \to Y$)</th>
+                                    <th style="width: 120px;">Normal Form</th>
+                                    <th>3NF Justification</th>
+                                </tr>
+                            </thead>
+                            <tbody id="normalizationTableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                                        Loading academic functional dependency matrix...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Lossless Join Decomposition Proof Box -->
+                <div class="p-4 bg-light rounded border">
+                    <h6 class="fw-bold text-dark mb-2">
+                        <i class="bi bi-shield-check text-success me-1"></i> Lossless-Join Decomposition &amp; Dependency Preservation Proof
+                    </h6>
+                    <p class="small text-muted mb-2">
+                        When decomposing relation $R$ into $R_1$ and $R_2$, the decomposition is <strong>lossless</strong> if and only if:
+                        <br>
+                        <code class="d-inline-block my-1 px-2 py-1 bg-white border rounded text-dark">
+                            (R1 &cap; R2 &rarr; R1) &or; (R1 &cap; R2 &rarr; R2)
+                        </code>
+                    </p>
+                    <ul class="small text-secondary mb-0 ps-3">
+                        <li><strong>Student &rarr; StudentPhone:</strong> $Student \cap StudentPhone = \{student\_id\}$, which is the primary key of $Student$. Hence, $student\_id \to Student$, proving the decomposition is strictly <em>lossless</em>.</li>
+                        <li><strong>Company &rarr; CompanyContact:</strong> $Company \cap CompanyContact = \{company\_id\}$, which is the primary key of $Company$. Natural join $Company \bowtie CompanyContact$ reconstructs original records without spurious tuples.</li>
+                        <li><strong>Dependency Preservation:</strong> Every functional dependency $X \to Y$ is directly enforceable within its decomposed relation or via relational foreign-key joins without querying other tables.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- TAB D: CONSTRAINTS & VIVA REVISION -->
+            <!-- ================================================================= -->
+            <div class="tab-pane fade" id="constraints" role="tabpanel" aria-labelledby="constraints-tab">
+                <div class="mb-4">
+                    <h5 class="fw-bold text-dark mb-1">Referential Integrity, Constraints &amp; Viva Q&amp;A</h5>
+                    <p class="text-muted small mb-0">
+                        Detailed breakdown of foreign key cascading actions, MySQL CHECK constraints, and university DBMS viva exam preparation.
+                    </p>
+                </div>
+
+                <!-- Section 1: Referential Integrity Matrix -->
+                <div class="content-card mb-4 p-0">
+                    <div class="content-card-header">
+                        <h6 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-link-45deg text-primary me-1"></i> Referential Integrity Matrix (Foreign Keys &amp; Trigger Actions)
+                        </h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Child Entity</th>
+                                    <th>Foreign Key Column</th>
+                                    <th>Parent Entity (PK)</th>
+                                    <th>ON DELETE</th>
+                                    <th>ON UPDATE</th>
+                                    <th>Business Logic &amp; DBMS Justification</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>student</code></td>
+                                    <td><code>department_id</code></td>
+                                    <td><code>department(department_id)</code></td>
+                                    <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle">RESTRICT</span></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td class="small text-muted">Prevents deleting an active department if registered students belong to it.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>student_phone</code></td>
+                                    <td><code>student_id</code></td>
+                                    <td><code>student(student_id)</code></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td class="small text-muted">Deleting a student removes all their associated phone numbers automatically.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>company_contact</code></td>
+                                    <td><code>company_id</code></td>
+                                    <td><code>company(company_id)</code></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td class="small text-muted">Deleting a company removes its HR directory entries automatically.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>company_contact_phone</code></td>
+                                    <td><code>contact_id</code></td>
+                                    <td><code>company_contact(contact_id)</code></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td class="small text-muted">Removing an HR representative cleans up all associated phone lines.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>job</code></td>
+                                    <td><code>company_id</code></td>
+                                    <td><code>company(company_id)</code></td>
+                                    <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle">RESTRICT</span></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td class="small text-muted">A recruiting partner cannot be deleted while active job vacancies are open.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>application</code></td>
+                                    <td><code>student_id</code></td>
+                                    <td><code>student(student_id)</code></td>
+                                    <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle">RESTRICT</span></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td class="small text-muted">Maintains institutional audit history of applications; student record is protected.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>application</code></td>
+                                    <td><code>job_id</code></td>
+                                    <td><code>job(job_id)</code></td>
+                                    <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle">RESTRICT</span></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td class="small text-muted">Prevents orphan applications if an administrator attempts to delete an active vacancy.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>interview</code></td>
+                                    <td><code>application_id</code></td>
+                                    <td><code>application(application_id)</code></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td class="small text-muted">If an application is withdrawn/deleted, interview round records are purged.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>offer</code></td>
+                                    <td><code>application_id</code></td>
+                                    <td><code>application(application_id)</code></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">CASCADE</span></td>
+                                    <td class="small text-muted">Enforces strict 1:1 dependency between job application and final placement letter.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section 2: Viva Examination Revision Questions -->
+                <div class="content-card p-4">
+                    <h6 class="fw-bold text-dark mb-3">
+                        <i class="bi bi-question-circle-fill text-info me-2"></i> University DBMS Viva Examination Questions &amp; Answers
+                    </h6>
+
+                    <div class="accordion accordion-flush" id="vivaAccordion">
+                        <!-- Q1 -->
+                        <div class="accordion-item border rounded mb-2">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    1. Why does the system use dedicated student_phone and company_contact_phone tables instead of phone1, phone2 columns?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#vivaAccordion">
+                                <div class="accordion-body small text-secondary">
+                                    Using <code>phone1, phone2, phone3</code> violates First Normal Form (1NF) by introducing repeating groups, artificial limits on numbers, and excess NULL values when students have only one phone. Creating the normalized child entity <code>student_phone</code> allows an arbitrary count of phones per student, guarantees atomicity, and avoids schema alterations when business requirements change.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q2 -->
+                        <div class="accordion-item border rounded mb-2">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    2. Why does student_phone use a composite primary key (student_id, phone_number)?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#vivaAccordion">
+                                <div class="accordion-body small text-secondary">
+                                    A student cannot register the exact same phone number multiple times. The combination of <code>(student_id, phone_number)</code> guarantees uniqueness without allocating a surrogate integer ID, accurately modelling a weak entity existence-dependent relationship.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q3 -->
+                        <div class="accordion-item border rounded mb-2">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    3. Why is the relationship between application and offer modelled as 1:1 rather than combined into one table?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#vivaAccordion">
+                                <div class="accordion-body small text-secondary">
+                                    In campus recruitment, the vast majority of applications do not progress to an offer. If <code>offered_ctc</code>, <code>offer_date</code>, and <code>joining_date</code> were placed inside <code>application</code>, the table would suffer from high sparsity (hundreds of NULL values for rejected candidates). Separating <code>offer</code> with <code>UNIQUE(application_id)</code> maintains clean 3NF and eliminates NULL anomalies.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q4 -->
+                        <div class="accordion-item border rounded mb-2">
+                            <h2 class="accordion-header" id="headingFour">
+                                <button class="accordion-button collapsed fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                                    4. What is the difference between ON DELETE RESTRICT and ON DELETE CASCADE in this schema?
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#vivaAccordion">
+                                <div class="accordion-body small text-secondary">
+                                    <code>RESTRICT</code> blocks deletion of a parent record if dependent child rows exist (e.g. deleting a student with active applications is blocked to protect historical audit data). <code>CASCADE</code> automatically propagates deletions down to child rows (e.g. deleting a company removes its HR contacts and contact phone lines to prevent orphan records).
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q5 -->
+                        <div class="accordion-item border rounded mb-2">
+                            <h2 class="accordion-header" id="headingFive">
+                                <button class="accordion-button collapsed fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
+                                    5. How does the application table resolve the Many-to-Many (M:N) relationship between Student and Job?
+                                </button>
+                            </h2>
+                            <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#vivaAccordion">
+                                <div class="accordion-body small text-secondary">
+                                    One student can apply to multiple jobs, and one job can receive applications from multiple students. <code>application</code> acts as an associative entity (bridge table) with foreign keys referencing <code>Student(student_id)</code> and <code>Job(job_id)</code>, supplemented by <code>UNIQUE(student_id, job_id)</code> to ensure a candidate cannot apply to the same position twice.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q6 -->
+                        <div class="accordion-item border rounded mb-2">
+                            <h2 class="accordion-header" id="headingSix">
+                                <button class="accordion-button collapsed fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix">
+                                    6. What makes this database fully compliant with 3NF?
+                                </button>
+                            </h2>
+                            <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#vivaAccordion">
+                                <div class="accordion-body small text-secondary">
+                                    Every relation satisfies 1NF (all attributes are atomic) and 2NF (no partial functional dependencies on any candidate key). Furthermore, all transitive dependencies have been decomposed ($X \to Y$ holds only when $X$ is a superkey), eliminating redundancy and insertion/deletion anomalies across all 10 entities.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/database_design.js') }}"></script>
+{% endblock %}
+

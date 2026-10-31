@@ -1,0 +1,64 @@
+{
+  "application": [
+    {
+      "application_id": 8,
+      "student_id": 8,
+      "job_id": 8,
+      "application_date": "2026-10-31T20:19:30",
+      "application_status": "Selected"
+    }
+  ],
+  "company": [
+    {
+      "company_id": 8,
+      "company_name": "google",
+      "industry": "it",
+      "website": "https://poki.com/",
+      "hr_contact_name": "priya sharma",
+      "hr_email": "hrgoogle@gmail.com",
+      "hr_phone": "98219873",
+      "company_address": "new delhi"
+    }
+  ],
+  "department": [
+    {
+      "department_id": 8,
+      "department_code": "COCSE1240",
+      "department_name": "computer science depatyment"
+    }
+  ],
+  "interview": [],
+  "job": [
+    {
+      "job_id": 8,
+      "company_id": 8,
+      "job_title": "software engineers",
+      "job_description": "help",
+      "job_type": "Internship",
+      "job_location": "delhi",
+      "minimum_cgpa": 7.0,
+      "maximum_backlogs": 0,
+      "minimum_package": 600000.0,
+      "maximum_package": 10000000.0,
+      "number_of_openings": 20,
+      "posting_date": "2026-11-12",
+      "application_deadline": "2026-12-15",
+      "job_status": "Open"
+    }
+  ],
+  "offer": [],
+  "student": [
+    {
+      "student_id": 8,
+      "roll_number": "ERRW324",
+      "student_name": "wer345",
+      "email": "afinwef@gmail.com",
+      "phone": "987438544",
+      "date_of_birth": "2006-02-10",
+      "batch_year": 2029,
+      "cgpa": 8.5,
+      "active_backlogs": 0,
+      "department_id": 8
+    }
+  ]
+}

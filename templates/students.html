@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Student Management{% endblock %}
+{% block breadcrumb %}Student Profiles{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Student Management</h4>
+            <p class="text-muted small mb-0">Manage student academic records, multi-contact phones, department affiliation, and placement eligibility.</p>
+        </div>
+        <button class="btn btn-sm btn-primary d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm" id="btnOpenAddStudentModal">
+            <i class="bi bi-person-plus-fill"></i>
+            <span>Register Student</span>
+        </button>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+        <div class="content-card-header">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="search-input-group">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="studentSearchInput" class="form-control" placeholder="Search by name, roll, phone, email...">
+                </div>
+                <select id="departmentFilterSelect" class="form-select form-select-sm" style="width: 200px;">
+                    <option value="">All Departments</option>
+                </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-secondary border small px-2 py-1" id="studentRecordCount">0 Students</span>
+                <button class="btn btn-sm btn-light border rounded-pill px-3" id="btnRefreshStudents">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ID</th>
+                        <th>Student &amp; Roll Number</th>
+                        <th>Department</th>
+                        <th>Email &amp; Contacts (1:N)</th>
+                        <th>Academic Metrics</th>
+                        <th>Batch</th>
+                        <th class="text-end" style="width: 120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                            Loading students from MySQL...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Student Modal (Create / Edit) -->
+<div class="modal fade" id="studentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="studentForm" autocomplete="off">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="studentModalTitle">Register New Student</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="studentIdInput">
+
+                    <div class="row g-3">
+                        <!-- Roll Number -->
+                        <div class="col-md-6">
+                            <label for="studentRollInput" class="form-label">Roll Number <span class="req">*</span></label>
+                            <input type="text" class="form-control text-uppercase" id="studentRollInput" placeholder="e.g. 2026CS101" maxlength="30" required>
+                            <div class="form-text">Unique academic institutional roll number.</div>
+                        </div>
+
+                        <!-- Full Name -->
+                        <div class="col-md-6">
+                            <label for="studentNameInput" class="form-label">Full Name <span class="req">*</span></label>
+                            <input type="text" class="form-control" id="studentNameInput" placeholder="e.g. Alex Johnson" maxlength="100" required>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label for="studentEmailInput" class="form-label">Email Address <span class="req">*</span></label>
+                            <input type="email" class="form-control" id="studentEmailInput" placeholder="e.g. alex.j@college.edu" maxlength="254" required>
+                        </div>
+
+                        <!-- Department Dropdown -->
+                        <div class="col-md-6">
+                            <label for="studentDepartmentInput" class="form-label">Academic Department <span class="req">*</span></label>
+                            <select class="form-select" id="studentDepartmentInput" required>
+                                <option value="">Select Department...</option>
+                            </select>
+                            <div class="form-text">Relational Foreign Key to Department table.</div>
+                        </div>
+
+                        <!-- Normalized Contact Numbers Group (1:N) -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded border">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="form-label mb-0 fw-semibold text-dark">
+                                        <i class="bi bi-telephone-fill text-primary me-1"></i> Contact Numbers (Normalized 1:N)
+                                    </label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" id="btnAddStudentPhoneRow" style="font-size:0.75rem;">
+                                        <i class="bi bi-plus-lg me-1"></i> Add Another Phone
+                                    </button>
+                                </div>
+                                <div id="studentPhonesContainer" class="d-flex flex-column gap-2">
+                                    <!-- Populated dynamically via JS -->
+                                </div>
+                                <div class="form-text mt-2 text-muted" style="font-size:0.75rem;">
+                                    Stored in normalized <code>student_phone</code> table. At least one contact number is required.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date of Birth -->
+                        <div class="col-md-4">
+                            <label for="studentDobInput" class="form-label">Date of Birth <span class="req">*</span></label>
+                            <input type="date" class="form-control" id="studentDobInput" required>
+                        </div>
+
+                        <!-- Batch Year -->
+                        <div class="col-md-4">
+                            <label for="studentBatchInput" class="form-label">Graduating Batch <span class="req">*</span></label>
+                            <input type="number" class="form-control" id="studentBatchInput" min="1990" max="2100" value="2026" required>
+                        </div>
+
+                        <!-- CGPA -->
+                        <div class="col-md-4">
+                            <label for="studentCgpaInput" class="form-label">CGPA (0.00 - 10.00) <span class="req">*</span></label>
+                            <input type="number" step="0.01" min="0" max="10" class="form-control" id="studentCgpaInput" placeholder="8.50" required>
+                        </div>
+
+                        <!-- Active Backlogs -->
+                        <div class="col-md-4">
+                            <label for="studentBacklogsInput" class="form-label">Active Backlogs <span class="req">*</span></label>
+                            <input type="number" min="0" class="form-control" id="studentBacklogsInput" value="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-light border px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary px-4" id="btnSaveStudent">
+                        <span id="saveStudentBtnText">Register Student</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/students.js') }}"></script>
+{% endblock %}

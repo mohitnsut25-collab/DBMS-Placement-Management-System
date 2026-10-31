@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Rounds Management{% endblock %}
+{% block breadcrumb %}Recruitment Interviews{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Interview Assessment Rounds</h4>
+            <p class="text-muted small mb-0">Schedule assessment rounds, record evaluation results, and log candidate technical feedback.</p>
+        </div>
+        <button class="btn btn-sm btn-primary d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm" id="btnOpenAddInterviewModal">
+            <i class="bi bi-calendar-plus-fill"></i>
+            <span>Schedule Interview</span>
+        </button>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+        <div class="content-card-header">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="search-input-group">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="interviewSearchInput" class="form-control" placeholder="Search by student, company, job...">
+                </div>
+                <select id="interviewResultFilterSelect" class="form-select form-select-sm" style="width: 160px;">
+                    <option value="">All Results</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Cleared">Cleared</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="No Show">No Show</option>
+                </select>
+                <select id="interviewModeFilterSelect" class="form-select form-select-sm" style="width: 150px;">
+                    <option value="">All Modes</option>
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                    <option value="Hybrid">Hybrid</option>
+                </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-secondary border small px-2 py-1" id="interviewRecordCount">0 Interviews</span>
+                <button class="btn btn-sm btn-light border rounded-pill px-3" id="btnRefreshInterviews">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ID</th>
+                        <th>Round</th>
+                        <th>Candidate &amp; Application</th>
+                        <th>Job Opening</th>
+                        <th>Interview Schedule</th>
+                        <th>Mode</th>
+                        <th>Evaluation Result</th>
+                        <th class="text-end" style="width: 120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="interviewsTableBody">
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                            Loading interviews from MySQL...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Interview Modal (Create / Edit) -->
+<div class="modal fade" id="interviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="interviewForm" autocomplete="off">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="interviewModalTitle">Schedule Interview Round</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="interviewIdInput">
+
+                    <div class="row g-3">
+                        <!-- Application Dropdown -->
+                        <div class="col-md-12" id="applicationSelectWrapper">
+                            <label for="interviewApplicationInput" class="form-label">Student Application <span class="req">*</span></label>
+                            <select class="form-select" id="interviewApplicationInput" required>
+                                <option value="">Select Application...</option>
+                            </select>
+                            <div class="form-text">Relational FK to Application table.</div>
+                        </div>
+
+                        <!-- Round Number -->
+                        <div class="col-md-4">
+                            <label for="interviewRoundInput" class="form-label">Round Number <span class="req">*</span></label>
+                            <input type="number" min="1" class="form-control" id="interviewRoundInput" value="1" required>
+                            <div class="form-text">e.g. 1 (Online Assessment), 2 (Technical), 3 (HR).</div>
+                        </div>
+
+                        <!-- Mode -->
+                        <div class="col-md-4">
+                            <label for="interviewModeInput" class="form-label">Interview Mode <span class="req">*</span></label>
+                            <select class="form-select" id="interviewModeInput" required>
+                                <option value="Online">Online</option>
+                                <option value="Offline">Offline</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </select>
+                        </div>
+
+                        <!-- Result -->
+                        <div class="col-md-4">
+                            <label for="interviewResultInput" class="form-label">Evaluation Result <span class="req">*</span></label>
+                            <select class="form-select" id="interviewResultInput" required>
+                                <option value="Pending">Pending</option>
+                                <option value="Cleared">Cleared</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="No Show">No Show</option>
+                            </select>
+                        </div>
+
+                        <!-- Date and Time -->
+                        <div class="col-md-12">
+                            <label for="interviewDateInput" class="form-label">Interview Date &amp; Time <span class="req">*</span></label>
+                            <input type="datetime-local" class="form-control" id="interviewDateInput" required>
+                        </div>
+
+                        <!-- Feedback -->
+                        <div class="col-md-12">
+                            <label for="interviewFeedbackInput" class="form-label">Evaluator Feedback / Assessment Notes</label>
+                            <textarea class="form-control" id="interviewFeedbackInput" rows="3" placeholder="Candidate's technical performance, problem-solving, communications..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-light border px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary px-4" id="btnSaveInterview">
+                        <span id="saveInterviewBtnText">Schedule Interview</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/interviews.js') }}"></script>
+{% endblock %}
+

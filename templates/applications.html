@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Application Management{% endblock %}
+{% block breadcrumb %}Student Applications{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Student Application Pipeline</h4>
+            <p class="text-muted small mb-0">Track candidate applications, review recruitment stages, and update progression statuses.</p>
+        </div>
+        <button class="btn btn-sm btn-primary d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm" id="btnOpenAddApplicationModal">
+            <i class="bi bi-send-plus-fill"></i>
+            <span>Submit Application</span>
+        </button>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+        <div class="content-card-header">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="search-input-group">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="applicationSearchInput" class="form-control" placeholder="Search by student, roll, job, company...">
+                </div>
+                <select id="applicationStatusFilterSelect" class="form-select form-select-sm" style="width: 170px;">
+                    <option value="">All Statuses</option>
+                    <option value="Applied">Applied</option>
+                    <option value="Under Review">Under Review</option>
+                    <option value="Shortlisted">Shortlisted</option>
+                    <option value="Selected">Selected</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Withdrawn">Withdrawn</option>
+                </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-secondary border small px-2 py-1" id="applicationRecordCount">0 Applications</span>
+                <button class="btn btn-sm btn-light border rounded-pill px-3" id="btnRefreshApplications">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ID</th>
+                        <th>Student Details</th>
+                        <th>Job Vacancy &amp; Company</th>
+                        <th>Academic Eligibility</th>
+                        <th>Application Date</th>
+                        <th>Status</th>
+                        <th class="text-end" style="width: 120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="applicationsTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                            Loading applications from MySQL...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Application Modal (Create / Edit) -->
+<div class="modal fade" id="applicationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="applicationForm" autocomplete="off">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="applicationModalTitle">Submit Job Application</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="applicationIdInput">
+
+                    <div class="row g-3">
+                        <!-- Student Dropdown -->
+                        <div class="col-md-6" id="studentSelectWrapper">
+                            <label for="applicationStudentInput" class="form-label">Student Candidate <span class="req">*</span></label>
+                            <select class="form-select" id="applicationStudentInput" required>
+                                <option value="">Select Student...</option>
+                            </select>
+                            <div class="form-text">Candidate must meet minimum CGPA and backlog requirements.</div>
+                        </div>
+
+                        <!-- Job Dropdown -->
+                        <div class="col-md-6" id="jobSelectWrapper">
+                            <label for="applicationJobInput" class="form-label">Job Vacancy <span class="req">*</span></label>
+                            <select class="form-select" id="applicationJobInput" required>
+                                <option value="">Select Job Opening...</option>
+                            </select>
+                            <div class="form-text">Must be an active 'Open' vacancy before deadline.</div>
+                        </div>
+
+                        <!-- Status Dropdown -->
+                        <div class="col-md-12">
+                            <label for="applicationStatusInput" class="form-label">Application Status <span class="req">*</span></label>
+                            <select class="form-select" id="applicationStatusInput" required>
+                                <option value="Applied">Applied</option>
+                                <option value="Under Review">Under Review</option>
+                                <option value="Shortlisted">Shortlisted</option>
+                                <option value="Selected">Selected</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Withdrawn">Withdrawn</option>
+                            </select>
+                            <div class="form-text">Note: An application must be set to 'Selected' before an offer can be issued.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-light border px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary px-4" id="btnSaveApplication">
+                        <span id="saveApplicationBtnText">Submit Application</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/applications.js') }}"></script>
+{% endblock %}
+

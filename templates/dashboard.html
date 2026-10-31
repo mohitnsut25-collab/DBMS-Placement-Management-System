@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block breadcrumb %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <!-- Welcome Banner -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Placement &amp; Recruitment Dashboard</h4>
+            <p class="text-muted small mb-0">Live management of student enrollment, recruiting partners, job vacancies, and placement milestones.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 rounded-pill px-3" id="refreshDashboardBtn">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Refresh Data</span>
+            </button>
+            <a href="{{ url_for('jobs_view') }}" class="btn btn-sm btn-primary d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm">
+                <i class="bi bi-plus-lg"></i>
+                <span>Post New Job</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 8 Primary Metric Cards (2 Rows of 4) -->
+    <div class="row g-3 mb-4">
+        <!-- 1. Total Departments -->
+        <div class="col-sm-6 col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-label">Departments</span>
+                    <div class="stat-icon-wrapper stat-icon-blue">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="statTotalDepartments">—</div>
+                <div class="text-muted small mt-1" style="font-size: 0.72rem;">Academic Disciplines</div>
+            </div>
+        </div>
+
+        <!-- 2. Total Students -->
+        <div class="col-sm-6 col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-label">Students</span>
+                    <div class="stat-icon-wrapper stat-icon-sky">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="statTotalStudents">—</div>
+                <div class="text-muted small mt-1" style="font-size: 0.72rem;">Registered Candidates</div>
+            </div>
+        </div>
+
+        <!-- 3. Total Companies -->
+        <div class="col-sm-6 col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-label">Companies</span>
+                    <div class="stat-icon-wrapper stat-icon-green">
+                        <i class="bi bi-building"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="statTotalCompanies">—</div>
+                <div class="text-muted small mt-1" style="font-size: 0.72rem;">Recruiting Partners</div>
+            </div>
+        </div>
+
+        <!-- 4. Total Jobs -->
+        <div class="col-sm-6 col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-label">Job Vacancies</span>
+                    <div class="stat-icon-wrapper stat-icon-amber">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="statTotalJobs">—</div>
+                <div class="text-muted small mt-1" style="font-size: 0.72rem;">Active Opportunities</div>
+            </div>
+        </div>
+
+        <!-- 5. Total Applications -->
+        <div class="col-sm-6 col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-label">Applications</span>
+                    <div class="stat-icon-wrapper stat-icon-blue">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="statTotalApplications">—</div>
+                <div class="text-muted small mt-1" style="font-size: 0.72rem;">Candidate Submissions</div>
+            </div>
+        </div>
+
+        <!-- 6. Total Interviews -->
+        <div class="col-sm-6 col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-label">Interviews</span>
+                    <div class="stat-icon-wrapper stat-icon-purple">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="statTotalInterviews">—</div>
+                <div class="text-muted small mt-1" style="font-size: 0.72rem;">Scheduled Rounds</div>
+            </div>
+        </div>
+
+        <!-- 7. Total Offers -->
+        <div class="col-sm-6 col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-label">Offers Extended</span>
+                    <div class="stat-icon-wrapper stat-icon-rose">
+                        <i class="bi bi-award-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="statTotalOffers">—</div>
+                <div class="text-muted small mt-1" style="font-size: 0.72rem;">Total Placement Offers</div>
+            </div>
+        </div>
+
+        <!-- 8. Accepted Offers -->
+        <div class="col-sm-6 col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-label">Accepted Offers</span>
+                    <div class="stat-icon-wrapper stat-icon-green">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="statTotalAcceptedOffers">—</div>
+                <div class="text-muted small mt-1" style="font-size: 0.72rem;">Confirmed Placements</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Banner -->
+    <div class="content-card p-3 mb-4 bg-light">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-lightning-charge-fill text-warning fs-5"></i>
+                <span class="fw-semibold small text-dark">Quick Administrative Actions:</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('students_view') }}" class="btn btn-sm btn-white border rounded-pill px-3">
+                    <i class="bi bi-person-plus text-primary me-1"></i> Register Student
+                </a>
+                <a href="{{ url_for('companies_view') }}" class="btn btn-sm btn-white border rounded-pill px-3">
+                    <i class="bi bi-building-add text-success me-1"></i> Add Company
+                </a>
+                <a href="{{ url_for('applications_view') }}" class="btn btn-sm btn-white border rounded-pill px-3">
+                    <i class="bi bi-send text-info me-1"></i> Submit Application
+                </a>
+                <a href="{{ url_for('interviews_view') }}" class="btn btn-sm btn-white border rounded-pill px-3">
+                    <i class="bi bi-calendar-plus text-purple me-1"></i> Schedule Interview
+                </a>
+                <a href="{{ url_for('offers_view') }}" class="btn btn-sm btn-white border rounded-pill px-3">
+                    <i class="bi bi-award text-danger me-1"></i> Generate Offer
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Split: Recent Applications & Upcoming Interviews / Pipeline -->
+    <div class="row g-4">
+        <!-- Recent Applications Table -->
+        <div class="col-lg-7">
+            <div class="content-card mb-4">
+                <div class="content-card-header">
+                    <h5 class="card-title-main">
+                        <i class="bi bi-clock-history text-primary"></i>
+                        Recent Applications
+                    </h5>
+                    <a href="{{ url_for('applications_view') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 small">
+                        View All <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>App ID</th>
+                                <th>Student</th>
+                                <th>Job Title</th>
+                                <th>Company</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentApplicationsTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                    Loading real-time application stream...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- College TNP Cell Info Box -->
+            <div class="content-card">
+                <div class="content-card-header">
+                    <h5 class="card-title-main">
+                        <i class="bi bi-info-circle text-primary"></i>
+                        TNP Department Architecture
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="college-logo-icon" style="width: 44px; height: 44px; font-size: 1.3rem;">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small text-dark">Central Placement &amp; Training Directorate</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Placement &amp; Recruitment Management System v2.0</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3" style="font-size: 0.8rem; line-height: 1.45;">
+                        Normalized institutional placement architecture spanning 10 relational entities. Supports multi-phone student enrollment, multiple corporate HR contacts, real-time eligibility screening, multi-round interview tracking, and official placement offer administration.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('database_design_view') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="bi bi-diagram-3 me-1"></i> Interactive ER Diagram &amp; 3NF Analysis
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Interviews & Pipeline Status -->
+        <div class="col-lg-5">
+            <!-- Upcoming Interviews Card -->
+            <div class="content-card mb-4">
+                <div class="content-card-header">
+                    <h5 class="card-title-main">
+                        <i class="bi bi-calendar-event text-purple"></i>
+                        Upcoming Interviews
+                    </h5>
+                    <a href="{{ url_for('interviews_view') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 small">
+                        All Interviews <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Round &amp; Mode</th>
+                                    <th>Date</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody id="upcomingInterviewsTableBody">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        <div class="spinner-border spinner-border-sm text-purple me-2" role="status"></div>
+                                        Loading scheduled interviews...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Placement Pipeline Overview & Status Distribution -->
+            <div class="content-card mb-0">
+                <div class="content-card-header">
+                    <h5 class="card-title-main">
+                        <i class="bi bi-funnel-fill text-info"></i>
+                        Placement Pipeline Status
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <span class="small fw-medium text-muted"><i class="bi bi-circle-fill text-primary me-2 small"></i>Applied</span>
+                        <span class="badge bg-primary rounded-pill" id="badgeCountApplied">0</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <span class="small fw-medium text-muted"><i class="bi bi-circle-fill text-warning me-2 small"></i>Under Review</span>
+                        <span class="badge bg-warning text-dark rounded-pill" id="badgeCountUnderReview">0</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <span class="small fw-medium text-muted"><i class="bi bi-circle-fill text-info me-2 small"></i>Shortlisted</span>
+                        <span class="badge bg-info text-dark rounded-pill" id="badgeCountShortlisted">0</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <span class="small fw-medium text-muted"><i class="bi bi-circle-fill text-success me-2 small"></i>Selected</span>
+                        <span class="badge bg-success rounded-pill" id="badgeCountSelected">0</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between py-2">
+                        <span class="small fw-medium text-muted"><i class="bi bi-circle-fill text-danger me-2 small"></i>Rejected / Withdrawn</span>
+                        <span class="badge bg-danger rounded-pill" id="badgeCountRejected">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
